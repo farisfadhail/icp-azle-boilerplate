@@ -20,15 +20,15 @@ const MessagePayload = Record({
 const messageStorage = StableBTreeMap(text, Message, 0);
 
 export default Canister({
-	getMessages: query([], Result(Vec(Message), text), () => {
-		return Result.Ok(messageStorage.values());
+	getMessages: query([], Vec(Message), () => {
+		return messageStorage.values();
 	}),
 
-	getMessage: query([text], Result(Message, text), (id) => {
+	getMessage: query([text], Opt(Message), (id) => {
 		const message = messageStorage.get(id);
 
-		// Result.Err("A message with id=" + id + " not found");
-		return message !== undefined && message !== null ? Result.Ok(message.values()) : Result.Err("A message with id=" + id + " not found");
+		// return message ? message : "A message with id=" + id + " not found";
+		return message;
 	}),
 
 	addMessage: update([MessagePayload], Result(Message, text), (payload) => {
