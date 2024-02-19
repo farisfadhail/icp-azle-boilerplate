@@ -41,13 +41,15 @@ export default Canister({
 	}),
 
 	updateMessage: update([text, MessagePayload], Result(Message, text), (id, payload) => {
-		const message = messageStorage.get(id);
+		const messageOpt = messageStorage.get(id);
 
-		if ("None" in message) {
+		if ("None" in messageOpt) {
 			return Err("A message with id='" + id + "' not found");
 		}
 
-		const updatedMessage = { ...message, ...payload, updatedAt: ic.time() };
+		const message = messageOpt.Some;
+
+		const updatedMessage = Object.assign(message, Object.assign(payload, { updatedId: ic.time() }));
 		messageStorage.insert(message.id, updatedMessage);
 		return Ok(updatedMessage);
 	}),
