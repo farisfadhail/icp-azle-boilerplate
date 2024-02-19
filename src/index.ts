@@ -49,7 +49,7 @@ export default Canister({
 
 		const message = messageOpt.Some;
 
-		const updatedMessage = Object.assign(message, Object.assign(payload, { updatedId: ic.time() }));
+		const updatedMessage = Object.assign(message, Object.assign(payload, { updatedAt: ic.time() }));
 		messageStorage.insert(message.id, updatedMessage);
 		return Ok(updatedMessage);
 	}),
