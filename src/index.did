@@ -1,7 +1,7 @@
 service: () -> {
-    addMessage: (record {attachmentURL:text; title:text; body:text}) -> (opt record {id:text; attachmentURL:text; title:text; body:text; createdAt:nat64; updatedAt:opt nat64});
+    addMessage: (record {attachmentURL:text; title:text; body:text}) -> (variant {Ok:record {id:text; attachmentURL:text; title:text; body:text; createdAt:nat64; updatedAt:opt nat64}; Err:text});
     deleteMessage: (text) -> (variant {Ok:record {id:text; attachmentURL:text; title:text; body:text; createdAt:nat64; updatedAt:opt nat64}; Err:text});
-    getMessage: (text) -> (opt record {id:text; attachmentURL:text; title:text; body:text; createdAt:nat64; updatedAt:opt nat64}) query;
+    getMessage: (text) -> (variant {Ok:opt record {id:text; attachmentURL:text; title:text; body:text; createdAt:nat64; updatedAt:opt nat64}; Err:text}) query;
     getMessages: () -> (vec record {id:text; attachmentURL:text; title:text; body:text; createdAt:nat64; updatedAt:opt nat64}) query;
-    updateMessage: (text, record {attachmentURL:text; title:text; body:text}) -> (opt record {id:text; attachmentURL:text; title:text; body:text; createdAt:nat64; updatedAt:opt nat64});
+    updateMessage: (text, record {attachmentURL:text; title:text; body:text}) -> (variant {Ok:record {id:text; attachmentURL:text; title:text; body:text; createdAt:nat64; updatedAt:opt nat64}; Err:text});
 }

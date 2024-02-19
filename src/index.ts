@@ -1,6 +1,6 @@
 // cannister code goes here
 import { v4 as uuidv4 } from "uuid";
-import { Record, StableBTreeMap, Vec, Result, nat64, ic, Opt, text, Canister, query, Some, None, update } from "azle";
+import { Record, StableBTreeMap, Vec, Result, nat64, ic, Opt, text, Canister, query, Some, None, update, Err, Ok } from "azle";
 
 const Message = Record({
 	id: text,
@@ -24,35 +24,46 @@ export default Canister({
 		return messageStorage.values();
 	}),
 
-	getMessage: query([text], Opt(Message), (id) => {
+	getMessage: query([text], Result(Opt(Message), text), (id) => {
 		const message = messageStorage.get(id);
 
-		// return message ? message : "A message with id=" + id + " not found";
-		return message;
+		if ("None" in message) {
+			return Err("A message with id='" + id + "' not found");
+		}
+
+		return Ok(message);
 	}),
 
 	addMessage: update([MessagePayload], Result(Message, text), (payload) => {
 		const message: typeof Message = { id: uuidv4(), createdAt: ic.time(), updatedAt: None, ...payload };
 		messageStorage.insert(message.id, message);
-		return Result.Ok(message);
+		return Ok(message);
 	}),
 
 	updateMessage: update([text, MessagePayload], Result(Message, text), (id, payload) => {
 		const message = messageStorage.get(id);
 
-		return message !== undefined && message !== null
-			? (() => {
-					const updateMessage: typeof Message = { ...message, ...payload, updatedAt: Some(ic.time()) };
-					messageStorage.insert(message.id, updateMessage);
-					return Result.Ok(updateMessage);
-			  })()
-			: Result.Err(`Couldn't update a message with id=${id}. Message not found`);
+		if ("None" in message) {
+			return Err("A message with id='" + id + "' not found");
+		}
+
+		const updatedMessage = { ...message, ...payload, updatedAt: ic.time() };
+		messageStorage.insert(message.id, updatedMessage);
+		return Ok(updatedMessage);
 	}),
 
 	deleteMessage: update([text], Result(Message, text), (id) => {
-		const deletedMessage = messageStorage.remove(id);
+		const messageOpt = messageStorage.get(id);
 
-		return deletedMessage !== undefined && deletedMessage !== null ? Result.Ok(deletedMessage) : Result.Err(`couldn't delete a message with id=${id}. message not found.`);
+		if ("None" in messageOpt) {
+			return Err("couldn't delete a message with id='" + id + "'. message not found.");
+		}
+
+		const message = messageOpt.Some;
+
+		messageStorage.remove(message.id);
+
+		return Ok(message);
 	}),
 });
 
